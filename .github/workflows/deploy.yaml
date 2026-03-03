@@ -29,8 +29,8 @@ jobs:
             git pull origin main
             
             # Recria a imagem e sobe os containers novamente
-            docker-compose down
-            docker-compose up -d --build
+            docker compose down
+            docker compose up -d --build
             
             # Limpa imagens antigas órfãs para liberar espaço no disco
             docker image prune -f
