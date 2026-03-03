@@ -74,24 +74,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     console.log('🔗 Configurando smooth scroll...');
     const anchorLinks = document.querySelectorAll('a[href^="#"]');
-    console.log(`Encontrados ${anchorLinks.length} links de âncora`);
-
-    anchorLinks.forEach((anchor, index) => {
-        const href = anchor.getAttribute('href');
-        console.log(`Link ${index + 1}:`, href);
-
+    
+    anchorLinks.forEach((anchor) => {
         anchor.addEventListener('click', function (e) {
             const href = this.getAttribute('href');
 
             // Ignora links vazios ou só com #
             if (!href || href === '#') {
-                console.log('⚠️ Link vazio, ignorando');
                 return;
             }
 
             e.preventDefault();
-            console.log('🎯 Clique detectado no link:', href);
-
             const target = document.querySelector(href);
 
             if (target) {
@@ -99,14 +92,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const navbarHeight = navbarElement ? navbarElement.offsetHeight : 70;
                 const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
 
-                console.log('📍 Rolando para posição:', targetPosition);
-
                 window.scrollTo({
                     top: targetPosition,
                     behavior: 'smooth'
                 });
-            } else {
-                console.error('❌ Seção não encontrada:', href);
             }
         });
     });
@@ -197,6 +186,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const numberElement = entry.target.querySelector('.stat-number');
                 if (numberElement) {
                     const finalNumber = numberElement.textContent;
+                    // Se for string não numérica, ignora a animação numérica complexa
+                    if (finalNumber === "OCI") return;
+                    
                     const isPlus = finalNumber.includes('+');
                     const number = parseInt(finalNumber);
 
@@ -206,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const timer = setInterval(() => {
                             current += increment;
                             if (current >= number) {
-                                numberElement.textContent = isPlus ? `${number}+` : number;
+                                numberElement.textContent = isPlus ? `${number}+` : (finalNumber.includes('%') ? `${number}%` : number);
                                 clearInterval(timer);
                             } else {
                                 numberElement.textContent = Math.floor(current);
@@ -288,14 +280,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Console easter egg
-    console.log('%c🚀 Olá! Seja bem-vindo ao meu portfólio!', 'color: #10b981; font-size: 20px; font-weight: bold;');
-    console.log('%c👨‍💻 Desenvolvido por Pedro Henrique Lima', 'color: #6b7280; font-size: 14px;');
-    console.log('%c💼 Procurando por um desenvolvedor backend? Entre em contato!', 'color: #10b981; font-size: 14px;');
-    console.log('✅ Todos os scripts inicializados com sucesso!');
+    // Console easter egg atualizado
+    console.log('%c🚀 Olá! Seja bem-vindo ao meu portfólio!', 'color: #2563eb; font-size: 20px; font-weight: bold;');
+    console.log('%c👨‍💻 Desenvolvido por Pedro Henrique Lima | Engenheiro de Software & Dados', 'color: #4b5563; font-size: 14px;');
+    console.log('%c☁️ Precisando escalar sua infraestrutura ou otimizar dados? Vamos conversar!', 'color: #2563eb; font-size: 14px;');
 });
 
-// Loading animation (fora do DOMContentLoaded)
+// Loading animation
 window.addEventListener('load', () => {
     document.body.style.opacity = '0';
     setTimeout(() => {

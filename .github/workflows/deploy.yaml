@@ -1,0 +1,36 @@
+name: Deploy to VPS via Git Pull
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  deploy:
+    name: Deploy com Git Pull e Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Executar Comandos na VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            # Entra na pasta onde o projeto já está clonado
+            cd /home/ubuntu/web-site
+            
+            # Descarta qualquer alteração local acidental para evitar conflitos
+            git reset --hard
+            
+            # Puxa o código mais recente
+            git pull origin main
+            
+            # Recria a imagem e sobe os containers novamente
+            docker-compose down
+            docker-compose up -d --build
+            
+            # Limpa imagens antigas órfãs para liberar espaço no disco
+            docker image prune -f
