@@ -42,7 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Close mobile menu when clicking on a link
         navLinks.forEach(link => {
             link.addEventListener('click', () => {
                 navMenu.classList.remove('active');
@@ -72,17 +71,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     // Smooth Scroll for Anchor Links
     // ============================================
-    console.log('🔗 Configurando smooth scroll...');
     const anchorLinks = document.querySelectorAll('a[href^="#"]');
     
     anchorLinks.forEach((anchor) => {
         anchor.addEventListener('click', function (e) {
             const href = this.getAttribute('href');
-
-            // Ignora links vazios ou só com #
-            if (!href || href === '#') {
-                return;
-            }
+            if (!href || href === '#') return;
 
             e.preventDefault();
             const target = document.querySelector(href);
@@ -101,171 +95,111 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ============================================
-    // Intersection Observer for Fade-in Animations
+    // Intersection Observer for Animations
     // ============================================
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -100px 0px'
     };
 
-    const observer = new IntersectionObserver((entries) => {
+    const simpleObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
+                entry.target.style.transform = entry.target.dataset.transform || 'translateY(0)';
             }
         });
     }, observerOptions);
 
-    // Animate sections
-    const sections = document.querySelectorAll('section:not(.hero)');
-    sections.forEach(section => {
+    // Seções gerais
+    document.querySelectorAll('section:not(.hero)').forEach(section => {
         section.style.opacity = '0';
+        section.dataset.transform = 'translateY(0)';
         section.style.transform = 'translateY(30px)';
         section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(section);
+        simpleObserver.observe(section);
     });
 
-    // Animate timeline items
-    const timelineItems = document.querySelectorAll('.timeline-item');
-    timelineItems.forEach((item, index) => {
-        item.style.opacity = '0';
-        item.style.transform = 'translateX(-30px)';
-        item.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
-    });
+    // Timeline, Skills, Education, Contact Cards
+    const elementsToAnimate = [
+        { selector: '.timeline-item', transform: 'translateX(-30px)', final: 'translateX(0)', delay: 0.1 },
+        { selector: '.skill-category', transform: 'scale(0.95)', final: 'scale(1)', delay: 0.1 },
+        { selector: '.education-card', transform: 'translateY(20px)', final: 'translateY(0)', delay: 0.2 },
+        { selector: '.contact-card', transform: 'scale(0.95)', final: 'scale(1)', delay: 0.15 }
+    ];
 
-    const timelineObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateX(0)';
-            }
+    elementsToAnimate.forEach(group => {
+        document.querySelectorAll(group.selector).forEach((el, index) => {
+            el.style.opacity = '0';
+            el.dataset.transform = group.final;
+            el.style.transform = group.transform;
+            el.style.transition = `all 0.6s ease ${index * group.delay}s`;
+            simpleObserver.observe(el);
         });
-    }, observerOptions);
-
-    timelineItems.forEach(item => {
-        timelineObserver.observe(item);
     });
 
-    // Animate skill categories
-    const skillCategories = document.querySelectorAll('.skill-category');
-    skillCategories.forEach((category, index) => {
-        category.style.opacity = '0';
-        category.style.transform = 'scale(0.95)';
-        category.style.transition = `opacity 0.5s ease ${index * 0.1}s, transform 0.5s ease ${index * 0.1}s`;
-    });
-
-    const skillObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'scale(1)';
-            }
-        });
-    }, observerOptions);
-
-    skillCategories.forEach(category => {
-        skillObserver.observe(category);
-    });
-
-    // Animate stats
+    // ============================================
+    // Fix: Number Counter Animation
+    // ============================================
     const stats = document.querySelectorAll('.stat');
     stats.forEach((stat, index) => {
         stat.style.opacity = '0';
+        stat.dataset.transform = 'translateY(0)';
         stat.style.transform = 'translateY(20px)';
-        stat.style.transition = `opacity 0.5s ease ${index * 0.15}s, transform 0.5s ease ${index * 0.15}s`;
+        stat.style.transition = `all 0.5s ease ${index * 0.15}s`;
     });
 
-    const statsObserver = new IntersectionObserver((entries) => {
+    const statsObserver = new IntersectionObserver((entries, obs) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.style.opacity = '1';
                 entry.target.style.transform = 'translateY(0)';
 
-                // Animate numbers
                 const numberElement = entry.target.querySelector('.stat-number');
-                if (numberElement) {
-                    const finalNumber = numberElement.textContent;
-                    // Se for string não numérica, ignora a animação numérica complexa
-                    if (finalNumber === "OCI") return;
+                if (numberElement && !numberElement.dataset.animated) {
+                    numberElement.dataset.animated = "true"; // Evita rodar duas vezes
+                    const finalString = numberElement.textContent;
                     
-                    const isPlus = finalNumber.includes('+');
-                    const number = parseInt(finalNumber);
+                    if (finalString === "OCI") return; // Ignora texto estático
+                    
+                    const isPlus = finalString.includes('+');
+                    const isPercent = finalString.includes('%');
+                    const targetNumber = parseInt(finalString.replace(/\D/g, ''));
 
-                    if (!isNaN(number)) {
+                    if (!isNaN(targetNumber)) {
                         let current = 0;
-                        const increment = number / 50;
+                        // Força pulos maiores para chegar rápido e não travar
+                        const increment = Math.ceil(targetNumber / 30); 
+                        
                         const timer = setInterval(() => {
                             current += increment;
-                            if (current >= number) {
-                                numberElement.textContent = isPlus ? `${number}+` : (finalNumber.includes('%') ? `${number}%` : number);
+                            if (current >= targetNumber) {
+                                // Garante que o número final seja exato
+                                let formatted = targetNumber;
+                                if (isPlus) formatted += '+';
+                                if (isPercent) formatted += '%';
+                                numberElement.textContent = formatted;
                                 clearInterval(timer);
                             } else {
-                                numberElement.textContent = Math.floor(current);
+                                numberElement.textContent = current;
                             }
-                        }, 30);
+                        }, 40);
                     }
                 }
+                obs.unobserve(entry.target);
             }
         });
     }, observerOptions);
 
-    stats.forEach(stat => {
-        statsObserver.observe(stat);
-    });
-
-    // Animate education cards
-    const educationCards = document.querySelectorAll('.education-card');
-    educationCards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        card.style.transition = `opacity 0.5s ease ${index * 0.2}s, transform 0.5s ease ${index * 0.2}s`;
-    });
-
-    const educationObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-
-    educationCards.forEach(card => {
-        educationObserver.observe(card);
-    });
-
-    // Animate contact cards
-    const contactCards = document.querySelectorAll('.contact-card');
-    contactCards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'scale(0.95)';
-        card.style.transition = `opacity 0.5s ease ${index * 0.15}s, transform 0.5s ease ${index * 0.15}s`;
-    });
-
-    const contactObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'scale(1)';
-            }
-        });
-    }, observerOptions);
-
-    contactCards.forEach(card => {
-        contactObserver.observe(card);
-    });
+    stats.forEach(stat => statsObserver.observe(stat));
 
     // Active nav link on scroll
     if (navbar && navLinks.length > 0) {
         window.addEventListener('scroll', () => {
             let current = '';
-            const allSections = document.querySelectorAll('section[id]');
-
-            allSections.forEach(section => {
+            document.querySelectorAll('section[id]').forEach(section => {
                 const sectionTop = section.offsetTop;
                 const navbarHeight = navbar.offsetHeight || 70;
-
                 if (window.pageYOffset >= (sectionTop - navbarHeight - 100)) {
                     current = section.getAttribute('id');
                 }
@@ -279,14 +213,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-
-    // Console easter egg atualizado
-    console.log('%c🚀 Olá! Seja bem-vindo ao meu portfólio!', 'color: #2563eb; font-size: 20px; font-weight: bold;');
-    console.log('%c👨‍💻 Desenvolvido por Pedro Henrique Lima | Engenheiro de Software & Dados', 'color: #4b5563; font-size: 14px;');
-    console.log('%c☁️ Precisando escalar sua infraestrutura ou otimizar dados? Vamos conversar!', 'color: #2563eb; font-size: 14px;');
 });
 
-// Loading animation
 window.addEventListener('load', () => {
     document.body.style.opacity = '0';
     setTimeout(() => {

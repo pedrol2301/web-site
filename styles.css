@@ -516,28 +516,53 @@ section {
     background-color: var(--primary-color);
 }
 
+/* --- Atualizações para Skill Tags (Cards com Ícones Grandes) --- */
 .skill-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    display: grid;
+    /* Cria colunas responsivas: os cards terão no mínimo 100px */
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1.2rem;
+    margin-top: 1rem;
 }
 
 .skill-tag {
-    padding: 0.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 1.5rem 0.5rem;
     background: var(--background-secondary);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: 12px;
     font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.skill-tag i {
+    font-size: 3.5rem; /* Ícones Gigantes e Legíveis */
+    transition: all 0.3s ease;
 }
 
 .skill-tag:hover {
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
-    transform: translateY(-2px);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
+}
+
+/* Deixa todos os ícones brancos ao passar o mouse para manter o contraste no azul */
+.skill-tag:hover i {
+    filter: brightness(0) invert(1);
+}
+
+/* Evita que ícones que não são do Devicon sofram filtro estranho */
+[data-theme="dark"] .skill-tag {
+    background: var(--background);
 }
 
 /* Experience Section */
